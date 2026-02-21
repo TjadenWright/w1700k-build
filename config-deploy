@@ -1,0 +1,4 @@
+#!/bin/bash
+
+cp .config OpenW1700k/.config
+cd OpenW1700k; make defconfig; cd ..;

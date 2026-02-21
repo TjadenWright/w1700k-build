@@ -1,0 +1,3 @@
+#!/bin/bash
+
+cp OpenW1700k/.config .config

@@ -11,6 +11,10 @@
 CUSTOM_DIR="OpenW1700k/package/openwrt-packages"
 APP_DIR="Apps"
 
+ORANGE="\e[38;5;208m"
+LIGHT_BLUE="\e[38;5;117m"
+GREEN="\e[38;5;82m"
+END_MESSAGE="\e[0m"
 
 # After copy: fix Makefile includes for specific LuCI apps
 declare -a LXi_APPS=(
@@ -19,7 +23,7 @@ declare -a LXi_APPS=(
 )
 
 
-echo "Adding custom OpenWRT packages"
+echo -e "${ORANGE}Adding custom OpenWRT packages:${END_MESSAGE}"
 
 
 # Verify base package dir exists (as you noted, OpenW1700k/package exists already)
@@ -46,24 +50,24 @@ mkdir -p "$CUSTOM_DIR"
 # The ':?' guard prevents accidental rm -rf on empty var expansion.
 # The '/*' only removes contents, not the directory itself.
 if [[ -d "$CUSTOM_DIR" ]]; then
-    echo "Clearing existing contents of: $CUSTOM_DIR"
+    echo -e "\tClearing existing contents of: ${LIGHT_BLUE}$CUSTOM_DIR${END_MESSAGE}"
     rm -rf "${CUSTOM_DIR:?}/"* "${CUSTOM_DIR:?}"/.[!.]* "${CUSTOM_DIR:?}"/..?* 2>/dev/null || true
 fi
+
 
 
 # Copy Apps/* into custom/
 # Using rsync preserves permissions and handles nested folders cleanly.
 # Falls back to cp -a if rsync isn't available.
 if command -v rsync >/dev/null 2>&1; then
-    echo "Copying from '$APP_DIR/' to '$CUSTOM_DIR/' using rsync"
+    echo -e "\tCopying from ${LIGHT_BLUE}$APP_DIR/${END_MESSAGE} -> ${LIGHT_BLUE}$CUSTOM_DIR/${END_MESSAGE} using rsync"
     rsync -a "$APP_DIR"/ "$CUSTOM_DIR"/
 else
     echo "rsync not found; using cp -a"
     cp -a "$APP_DIR"/. "$CUSTOM_DIR"/
 fi
 
-
-echo "Patching Makefiles for specific LuCI apps to use feeds luci.mk …"
+echo -e "\tPatching Makefiles for specific LuCI apps to use feeds ${LIGHT_BLUE}luci.mk${END_MESSAGE} …"
 for pkg in "${LXi_APPS[@]}"; do
     pkg_dir="$CUSTOM_DIR/$pkg"
     if [[ ! -d "$pkg_dir" ]]; then
@@ -82,7 +86,7 @@ for pkg in "${LXi_APPS[@]}"; do
     for mf in "${makefiles[@]}"; do
         # Only replace if the line includes exactly ../../luci.mk (with optional whitespace)
         if grep -Eq '^[[:space:]]*include[[:space:]]+\.\./\.\./luci\.mk[[:space:]]*$' "$mf"; then
-            echo "  - Patching: $mf"
+            echo -e "\t\t- Patching: ${LIGHT_BLUE}$mf${END_MESSAGE}"
             # Use a robust regex replacement; preserve file otherwise
             sed -i -E \
                 's|^[[:space:]]*include[[:space:]]+\.\./\.\./luci\.mk[[:space:]]*$|include $(TOPDIR)/feeds/luci/luci.mk|g' \
@@ -93,7 +97,12 @@ for pkg in "${LXi_APPS[@]}"; do
     done
 done
 
-echo "Done. Custom packages are in: $CUSTOM_DIR"
+echo -e "\tDone. Custom packages are in: ${LIGHT_BLUE}$CUSTOM_DIR${END_MESSAGE}"
 
+echo -e "${ORANGE}Updating OpenWRT feeds:${END_MESSAGE}"
 ./OpenW1700k/scripts/feeds update -a
+
+echo -e "${ORANGE}Installing OpenWRT feeds:${END_MESSAGE}"
 ./OpenW1700k/scripts/feeds install -a
+
+echo -e "${GREEN}Done!${END_MESSAGE}"

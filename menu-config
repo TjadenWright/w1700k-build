@@ -1,0 +1,3 @@
+#!/bin/bash
+
+cd OpenW1700k; make menuconfig; cd ..;

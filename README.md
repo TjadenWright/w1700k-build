@@ -6,5 +6,5 @@
 `git submodule add https://github.com/rchen14b/luci-app-airoha-npu Apps/luci-app-airoha-npu`
 
 `./custom-apps`
-`cd OpenW1700k; make menuconfig; cd ..;`
-`cd OpenW1700k; export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/lib/wsl/lib; make -j$(nproc); cd ..;`
+`./menu-config`
+`./build-openwrt`
