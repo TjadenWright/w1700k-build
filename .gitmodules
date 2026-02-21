@@ -1,0 +1,3 @@
+[submodule "OpenW1700k"]
+	path = OpenW1700k
+	url = https://github.com/OpenWRT-fanboy/OpenW1700k.git
