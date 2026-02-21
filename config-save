@@ -1,3 +1,21 @@
 #!/bin/bash
 
-cp OpenW1700k/.config .config
+# Ensure a destination filename was provided
+if [ -z "$1" ]; then
+    echo "Usage: $0 <destination-config-file>"
+    exit 1
+fi
+
+DEST="$1"
+SRC="OpenW1700k/.config"
+
+# Check that the source exists
+if [ ! -f "$SRC" ]; then
+    echo "Error: Source file '$SRC' does not exist."
+    exit 1
+fi
+
+# Copy from OpenW1700k/.config → destination
+cp "$SRC" "$DEST"
+
+echo "Saved $SRC → $DEST"
