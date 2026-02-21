@@ -7,3 +7,12 @@
 [submodule "Apps/luci-app-airoha-npu"]
 	path = Apps/luci-app-airoha-npu
 	url = https://github.com/rchen14b/luci-app-airoha-npu
+[submodule "Apps/luci-app-tailscale-ng"]
+	path = Apps/luci-app-tailscale-ng
+	url = https://github.com/vad-b/luci-app-tailscale-ng
+[submodule "Apps/luci-app-wolplus"]
+	path = Apps/luci-app-wolplus
+	url = https://github.com/animegasan/luci-app-wolplus
+[submodule "Apps/luci-theme-argon"]
+	path = Apps/luci-theme-argon
+	url = https://github.com/jerrykuku/luci-theme-argon
