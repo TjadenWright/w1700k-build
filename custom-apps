@@ -1,0 +1,99 @@
+#!/bin/bash
+
+#
+# Sync Apps/ into OpenW1700k/package/custom for OpenWrt builds.
+# - Ensures custom directory exists
+# - Clears custom directory contents before copying
+# - Copies Apps/ content into custom/
+#
+
+
+CUSTOM_DIR="OpenW1700k/package/openwrt-packages"
+APP_DIR="Apps"
+
+
+# After copy: fix Makefile includes for specific LuCI apps
+declare -a LXi_APPS=(
+  "luci-app-airoha-npu"
+  "luci-app-w1700k-fancontrol"
+)
+
+
+echo "Adding custom OpenWRT packages"
+
+
+# Verify base package dir exists (as you noted, OpenW1700k/package exists already)
+BASE_PACKAGE_DIR="$(dirname "$CUSTOM_DIR")"
+if [[ ! -d "$BASE_PACKAGE_DIR" ]]; then
+    echo "ERROR: Base package directory does not exist: $BASE_PACKAGE_DIR" >&2
+    echo "Make sure OpenW1700k/package exists before running this script." >&2
+    exit 1
+fi
+
+
+# Verify Apps directory exists and is a directory
+if [[ ! -d "$APP_DIR" ]]; then
+    echo "ERROR: Apps directory not found: $APP_DIR" >&2
+    exit 1
+fi
+
+
+# Create custom directory if it doesn't exist
+mkdir -p "$CUSTOM_DIR"
+
+
+# Clear the custom directory contents safely (but keep the directory itself)
+# The ':?' guard prevents accidental rm -rf on empty var expansion.
+# The '/*' only removes contents, not the directory itself.
+if [[ -d "$CUSTOM_DIR" ]]; then
+    echo "Clearing existing contents of: $CUSTOM_DIR"
+    rm -rf "${CUSTOM_DIR:?}/"* "${CUSTOM_DIR:?}"/.[!.]* "${CUSTOM_DIR:?}"/..?* 2>/dev/null || true
+fi
+
+
+# Copy Apps/* into custom/
+# Using rsync preserves permissions and handles nested folders cleanly.
+# Falls back to cp -a if rsync isn't available.
+if command -v rsync >/dev/null 2>&1; then
+    echo "Copying from '$APP_DIR/' to '$CUSTOM_DIR/' using rsync"
+    rsync -a "$APP_DIR"/ "$CUSTOM_DIR"/
+else
+    echo "rsync not found; using cp -a"
+    cp -a "$APP_DIR"/. "$CUSTOM_DIR"/
+fi
+
+
+echo "Patching Makefiles for specific LuCI apps to use feeds luci.mk …"
+for pkg in "${LXi_APPS[@]}"; do
+    pkg_dir="$CUSTOM_DIR/$pkg"
+    if [[ ! -d "$pkg_dir" ]]; then
+        echo "  - NOTE: package not found (skipping): $pkg_dir"
+        continue
+    fi
+
+    # Find Makefiles under the package (top-level or one level deeper)
+    mapfile -t makefiles < <(find "$pkg_dir" -maxdepth 2 -type f -name Makefile 2>/dev/null || true)
+
+    if [[ ${#makefiles[@]} -eq 0 ]]; then
+        echo "  - NOTE: no Makefile found in: $pkg_dir"
+        continue
+    fi
+
+    for mf in "${makefiles[@]}"; do
+        # Only replace if the line includes exactly ../../luci.mk (with optional whitespace)
+        if grep -Eq '^[[:space:]]*include[[:space:]]+\.\./\.\./luci\.mk[[:space:]]*$' "$mf"; then
+            echo "  - Patching: $mf"
+            # Use a robust regex replacement; preserve file otherwise
+            sed -i -E \
+                's|^[[:space:]]*include[[:space:]]+\.\./\.\./luci\.mk[[:space:]]*$|include $(TOPDIR)/feeds/luci/luci.mk|g' \
+                "$mf"
+        else
+            echo "  - No matching include to patch in: $mf (leaving as-is)"
+        fi
+    done
+done
+
+echo "Done. Custom packages are in: $CUSTOM_DIR"
+
+./OpenW1700k/scripts/feeds update -a
+./OpenW1700k/scripts/feeds install -a
