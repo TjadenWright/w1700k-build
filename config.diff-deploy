@@ -2,7 +2,7 @@
 
 # Ensure a destination filename was provided
 if [ -z "$1" ]; then
-    echo "Usage: $0 <destination-config-file>"
+    echo "Usage: $0 <destination-config.diff-file>"
     exit 1
 fi
 

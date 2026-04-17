@@ -24,3 +24,4 @@
 * `./build-openwrt`
 * `./config-save <CONFIG_NAME>`
 * `./config-deploy <CONFIG_NAME>`
+* `./config.diff-deploy <CONFIG_NAME>`
