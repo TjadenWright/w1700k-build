@@ -16,3 +16,6 @@
 [submodule "Apps/luci-theme-argon"]
 	path = Apps/luci-theme-argon
 	url = https://github.com/jerrykuku/luci-theme-argon
+[submodule "Apps/luci-theme-glass"]
+	path = Apps/luci-theme-glass
+	url = https://github.com/rchen14b/luci-theme-glass
