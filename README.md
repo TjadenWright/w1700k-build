@@ -11,6 +11,8 @@
 * `git submodule add https://github.com/animegasan/luci-app-wolplus Apps/luci-app-wolplus`
 * `git submodule add https://github.com/jerrykuku/luci-theme-argon Apps/luci-theme-argon`
 
+git submodule update --init --recursive
+
 ## Configs
 ### Default Minimal Branch Config
 * `default.config`
