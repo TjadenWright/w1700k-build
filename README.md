@@ -27,3 +27,14 @@ git submodule update --init --recursive
 * `./config-save <CONFIG_NAME>`
 * `./config-deploy <CONFIG_NAME>`
 * `./config.diff-deploy <CONFIG_NAME>`
+
+
+git submodule deinit -f .
+rm -rf .git/modules
+git submodule update --init --recursive
+
+git submodule foreach --recursive '
+  git fetch --all
+  git reset --hard origin/$(git rev-parse --abbrev-ref HEAD)
+'
+
